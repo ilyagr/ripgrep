@@ -1,3 +1,5 @@
+https://github.com/BurntSushi/ripgrep/commit/c2cb0a4de4597c8f911c8ebece6aa0435ef5da6f
+
 ripgrep (rg)
 ------------
 ripgrep is a line-oriented search tool that recursively searches your current
