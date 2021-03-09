@@ -1354,6 +1354,10 @@ used. Globbing rules match .gitignore globs. Precede a glob with a ! to exclude
 it. If multiple globs match a file or directory, the glob given later in the
 command line takes precedence.
 
+As an extension, globs support specifying alternatives: '-g ab{c,d}' is
+equivalet to '-g abc -g abd'. Empty alternatives ('-g ab{,c}') are not
+currently supported.
+
 When this flag is set, every file and directory is applied to it to test for
 a match. So for example, if you only want to search in a particular directory
 'foo', then *-g foo* is incorrect because 'foo/bar' does not match the glob
