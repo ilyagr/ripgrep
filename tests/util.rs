@@ -354,7 +354,8 @@ impl TestCommand {
     /// Runs the command and asserts that its exit code matches expected exit
     /// code.
     pub fn assert_exit_code(&mut self, expected_code: i32) {
-        let code = self.cmd.output().unwrap().status.code().unwrap();
+        let o = self.cmd.output().unwrap();
+        let code = o.status.code().unwrap();
         assert_eq!(
             expected_code,
             code,
@@ -364,12 +365,15 @@ impl TestCommand {
              \n\ndir list: {:?}\
              \n\nexpected: {}\
              \n\nfound: {}\
+             \n\nstdout: {}\n\nstderr: {}\
              \n\n=====\n",
             self.cmd,
             self.dir.dir.display(),
             dir_list(&self.dir.dir),
             expected_code,
-            code
+            code,
+            String::from_utf8_lossy(&o.stdout),
+            String::from_utf8_lossy(&o.stderr)
         );
     }
 

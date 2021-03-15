@@ -787,6 +787,105 @@ rgtest!(f1466_no_ignore_files, |dir: Dir, mut cmd: TestCommand| {
     eqnice!("foo\n", cmd.arg("-u").stdout());
 });
 
+// Glob overrides --type-not and --type, regardless of order
+// Plans to change this: https://github.com/BurntSushi/ripgrep/issues/809#issuecomment-797205550
+rgtest!(glob_versus_type_legacy, |dir: Dir, mut cmd: TestCommand| {
+    dir.create("test.txt", "");
+
+    cmd.arg("--sort").arg("path").arg("--files");
+    cmd.arg("--glob").arg("*.txt").arg("--type-not").arg("txt");
+    eqnice!("test.txt\n", cmd.stdout());
+
+    let mut cmd = dir.command();
+    cmd.arg("--sort").arg("path").arg("--files");
+    cmd.arg("--type-not").arg("txt").arg("--glob").arg("*.txt");
+    eqnice!("test.txt\n", cmd.stdout());
+
+    let mut cmd = dir.command();
+    cmd.arg("--sort").arg("path").arg("--files");
+    cmd.arg("--glob").arg("!*.txt").arg("--type").arg("txt");
+    cmd.assert_exit_code(1); // No results
+
+    let mut cmd = dir.command();
+    cmd.arg("--sort").arg("path").arg("--files");
+    cmd.arg("--type").arg("txt").arg("--glob").arg("!*.txt");
+    cmd.assert_exit_code(1); // No results
+});
+
+// --type-not overrides --type, regardless of order. Plan to change this to
+// match "glob_versus_glob" behavior below: https://github.com/BurntSushi/ripgrep/issues/809#issuecomment-797205550
+rgtest!(type_versus_type_not_legacy, |dir: Dir, mut cmd: TestCommand| {
+    dir.create("test.txt", "");
+
+    cmd.arg("--sort").arg("path").arg("--files");
+    cmd.arg("--type").arg("txt").arg("--type-not").arg("txt");
+    cmd.assert_exit_code(1); // No results
+
+    let mut cmd = dir.command();
+    cmd.arg("--sort").arg("path").arg("--files");
+    cmd.arg("--type-not").arg("txt").arg("--type").arg("txt");
+    cmd.assert_exit_code(1); // No results
+});
+
+rgtest!(glob_versus_glob, |dir: Dir, mut cmd: TestCommand| {
+    dir.create("test.txt", "");
+
+    cmd.arg("--sort").arg("path").arg("--files");
+    cmd.arg("--glob").arg("*.txt").arg("--glob").arg("!*.txt");
+    cmd.assert_exit_code(1); // No results
+
+    let mut cmd = dir.command();
+    cmd.arg("--sort").arg("path").arg("--files");
+    cmd.arg("--glob").arg("!*.txt").arg("--glob").arg("*.txt");
+    eqnice!("test.txt\n", cmd.stdout());
+});
+
+rgtest!(
+    hidden_ignored_vs_glob_and_type_legacy,
+    |dir: Dir, mut cmd: TestCommand| {
+        dir.create_dir(".git/info");
+        dir.create(".git/info/exclude", "ignored.txt");
+        dir.create("ignored.txt", "");
+        dir.create(".hidden.txt", "");
+
+        // --glob overrides both ignores and hidden files (will change to no results)
+        cmd.arg("--sort").arg("path").arg("--files");
+        cmd.arg("-g").arg("*.txt");
+        eqnice!(".hidden.txt\nignored.txt\n", cmd.stdout());
+
+        // --type confusingly overrides hidden files, but NOT ignores (will change to no results)
+        let mut cmd = dir.command();
+        cmd.arg("--sort").arg("path").arg("--files");
+        cmd.arg("--type").arg("txt");
+        eqnice!(".hidden.txt\n", cmd.stdout());
+    }
+);
+
+rgtest!(
+    bang_ignores_override_hidden_but_not_negative_glob_or_type,
+    |dir: Dir, mut cmd: TestCommand| {
+        dir.create_dir(".git/info");
+        dir.create(".git/info/exclude", "!.must_show.txt");
+        dir.create(".must_show.txt", "");
+
+        // Ignores with ! can override hidden files
+        cmd.arg("--sort").arg("path").arg("--files");
+        eqnice!(".must_show.txt\n", cmd.stdout());
+
+        // Globs with ! override ignores with !
+        let mut cmd = dir.command();
+        cmd.arg("-g").arg("!.must_show.txt");
+        cmd.arg("--sort").arg("path").arg("--files");
+        cmd.assert_exit_code(1); // No results
+
+        // --type-not overrides ignores with !
+        let mut cmd = dir.command();
+        cmd.arg("--type-not").arg("txt");
+        cmd.arg("--sort").arg("path").arg("--files");
+        cmd.assert_exit_code(1); // No results
+    }
+);
+
 rgtest!(no_context_sep, |dir: Dir, mut cmd: TestCommand| {
     dir.create("test", "foo\nctx\nbar\nctx\nfoo\nctx");
     cmd.args(&["-A1", "--no-context-separator", "foo", "test"]);
