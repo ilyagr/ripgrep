@@ -337,6 +337,8 @@ impl Ignore {
         dent: &DirEntry,
     ) -> Match<IgnoreMatch<'a>> {
         let m = self.matched(dent.path(), dent.is_dir());
+        // Ilya: if type says to whitelist, this is ignored:
+        // Is the point that this check is expensive?
         if m.is_none() && self.0.opts.hidden && is_hidden(dent) {
             return Match::Ignore(IgnoreMatch::hidden());
         }
@@ -368,6 +370,7 @@ impl Ignore {
                 .overrides
                 .matched(path, is_dir)
                 .map(IgnoreMatch::overrides);
+            // if mat.is_ignore() {  // Ilya
             if !mat.is_none() {
                 return mat;
             }
@@ -863,6 +866,19 @@ mod tests {
 
     fn tmpdir() -> TempDir {
         TempDir::new().unwrap()
+    }
+
+    fn fun_fun<F>(cl: F) -> i32
+    where
+        F: Fn() -> i32,
+    {
+        return cl() + 1;
+    }
+
+    #[test]
+    fn fun_with_closures() {  // Ilya
+        let closure = || return 5;
+        assert!(fun_fun(closure) == 6);
     }
 
     #[test]
