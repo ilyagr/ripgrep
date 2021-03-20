@@ -840,26 +840,23 @@ rgtest!(glob_versus_glob, |dir: Dir, mut cmd: TestCommand| {
     eqnice!("test.txt\n", cmd.stdout());
 });
 
-rgtest!(
-    hidden_ignored_vs_glob_and_type_legacy,
-    |dir: Dir, mut cmd: TestCommand| {
-        dir.create_dir(".git/info");
-        dir.create(".git/info/exclude", "ignored.txt");
-        dir.create("ignored.txt", "");
-        dir.create(".hidden.txt", "");
+rgtest!(hidden_ignored_vs_glob_and_type, |dir: Dir, mut cmd: TestCommand| {
+    dir.create_dir(".git/info");
+    dir.create(".git/info/exclude", "ignored.txt");
+    dir.create("ignored.txt", "");
+    dir.create(".hidden.txt", "");
 
-        // --glob overrides both ignores and hidden files (will change to no results)
-        cmd.arg("--sort").arg("path").arg("--files");
-        cmd.arg("-g").arg("*.txt");
-        eqnice!(".hidden.txt\nignored.txt\n", cmd.stdout());
+    // --glob overrides both ignores and hidden files (will change to no results)
+    cmd.arg("--sort").arg("path").arg("--files");
+    cmd.arg("-g").arg("*.txt");
+    cmd.assert_exit_code(1); // No results
 
-        // --type confusingly overrides hidden files, but NOT ignores (will change to no results)
-        let mut cmd = dir.command();
-        cmd.arg("--sort").arg("path").arg("--files");
-        cmd.arg("--type").arg("txt");
-        eqnice!(".hidden.txt\n", cmd.stdout());
-    }
-);
+    // --type confusingly overrides hidden files, but NOT ignores (will change to no results)
+    let mut cmd = dir.command();
+    cmd.arg("--sort").arg("path").arg("--files");
+    cmd.arg("--type").arg("txt");
+    cmd.assert_exit_code(1); // No results
+});
 
 rgtest!(
     bang_ignores_override_hidden_but_not_negative_glob_or_type,
