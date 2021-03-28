@@ -861,6 +861,8 @@ rgtest!(
     }
 );
 
+// TODO: command-line arg overrides everything
+
 rgtest!(
     bang_ignores_override_hidden_but_not_negative_glob_or_type,
     |dir: Dir, mut cmd: TestCommand| {

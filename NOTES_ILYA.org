@@ -1,0 +1,13 @@
+
+
+* Why not the one-line version (hard part)
+** Makes =-T= override =-g=.
+** Type vs hidden different from type vs ignore (change, very good)
+Weird because glob is supposed to be stronger that type, but cannot override hidden
+
+* Why I like hidden/ignored interaction
+- Both enabled by default
+- My example of .ignore
+- Perhaps mention/comment in [[https://github.com/BurntSushi/ripgrep/pull/1680]]?
+
+* =-g *= same as no glob (unless at end)
