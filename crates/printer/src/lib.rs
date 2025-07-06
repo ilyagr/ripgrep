@@ -66,6 +66,7 @@ pub use crate::{
         HyperlinkConfig, HyperlinkEnvironment, HyperlinkFormat,
         HyperlinkFormatError,
     },
+    hyperlink_aliases::hyperlink_alias_names,
     path::{PathPrinter, PathPrinterBuilder},
     standard::{Standard, StandardBuilder, StandardSink},
     stats::Stats,

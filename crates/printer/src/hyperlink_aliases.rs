@@ -21,6 +21,20 @@ const HYPERLINK_PATTERN_ALIASES: &[(&str, &str)] = &[
     ("vscodium", "vscodium://file{path}:{line}:{column}"),
 ];
 
+const ALIAS_COUNT: usize = HYPERLINK_PATTERN_ALIASES.len();
+
+const HYPERLINK_FORMAT_ALIAS_NAMES: &[&str] = &{
+    let mut names = [""; ALIAS_COUNT];
+    let mut i = 0;
+
+    while i < ALIAS_COUNT {
+        names[i] = HYPERLINK_PATTERN_ALIASES[i].0;
+        i += 1;
+    }
+
+    names
+};
+
 /// Look for the hyperlink format defined by the given alias name.
 ///
 /// If one does not exist, `None` is returned.
@@ -29,6 +43,11 @@ pub(crate) fn find(name: &str) -> Option<&str> {
         .binary_search_by_key(&name, |&(name, _)| name)
         .map(|i| HYPERLINK_PATTERN_ALIASES[i].1)
         .ok()
+}
+
+/// List of pre-defined hyperlink format aliases
+pub fn hyperlink_alias_names() -> &'static [&'static str] {
+    HYPERLINK_FORMAT_ALIAS_NAMES
 }
 
 /// Return an iterator over all available alias names and their definitions.

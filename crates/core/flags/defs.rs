@@ -2954,18 +2954,7 @@ https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
     }
 
     fn doc_choices(&self) -> &'static [&'static str] {
-        &[
-            "default",
-            "none",
-            "file",
-            "grep+",
-            "kitty",
-            "macvim",
-            "textmate",
-            "vscode",
-            "vscode-insiders",
-            "vscodium",
-        ]
+        grep::printer::hyperlink_alias_names()
     }
 
     fn update(&self, v: FlagValue, args: &mut LowArgs) -> anyhow::Result<()> {
